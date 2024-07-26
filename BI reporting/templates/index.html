@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Business Intelligence Chatbot{% endblock %}
+{% block content %}
+<div class="container text-center mt-5" style="color:white;">
+    <h1 class="display-4">Business Intelligence Chatbot</h1>
+    <p class="lead">Get insights and answers from your data with ease.</p>
+    <div class="mt-4">
+        <a href="{{ url_for('new_chat') }}" class="btn btn-lg btn-primary">Get Started</a>
+    </div>
+</div>
+{% endblock %}

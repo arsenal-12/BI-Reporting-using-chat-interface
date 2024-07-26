@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #000048; /* Dark blue background */
+            color: #ffffff; /* White text */
+            width: 280vh;
+        }
+        .container-fluid {
+            margin-top: 100px;
+        }
+        .row {
+            padding: 20px;
+        }
+        .chat-history {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #1e1e1e; /* Dark gray background */
+            color: #ffffff; /* White text */
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .question-form {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #333; /* Darker gray background */
+            color: #ffffff; /* White text */
+        }
+        .response {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #ffffff; /* White background */
+            color: #333; /* Dark text */
+            width: 80vh;
+        }
+        .btn-primary {
+            background-color: #007bff; /* Bootstrap primary blue */
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        .alert-warning {
+            background-color: #ffc107; /* Bootstrap warning yellow */
+            color: #333; /* Dark text */
+        }
+        .cognizant-logo {
+            position: absolute;
+            top: 20px; /* Adjust top position */
+            left: 10px; /* Adjust left position */
+            width: 350px; /* Adjust size as needed */
+            height: auto;
+        }
+        .white-background {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+        }
+        .feedback-buttons {
+            margin-top: 20px;
+        }
+    </style>
+    <!-- ECharts Library -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+<body>
+    <!-- Cognizant Logo -->
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Side - Chat History -->
+            <div class="col-md-6">
+                <h2>Chat History</h2>
+                <div class="chat-history">
+                    {% if chat_history %}
+                        {% for question, response in chat_history %}
+                            <div class="chat-message">
+                                <strong>User:</strong> {{ question }}<br>
+                                <strong>Response:</strong> {{ response }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No chat history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Side - Question Form and Response -->
+            <div class="col-md-6">
+                <h2>Ask a Question</h2>
+                <form class="question-form" method="POST" action="/chat/{{ chat_id }}">
+                    <div class="form-group">
+                        <label for="question">Enter your question:</label>
+                        <input type="text" class="form-control" id="question" name="question" placeholder="Type your question here">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+
+                {% if sql_query %}
+                    <div class="response">
+                        <h3>Generated SQL Query:</h3>
+                        <p>{{ sql_query }}</p>
+                    </div>
+                {% endif %}
+                {% if table_html %}
+                    <div class="response">
+                        <h3>Table:</h3>
+                        {{ table_html | safe }}
+                    </div>
+                {% endif %}
+                {% if chart_html %}
+                    <div class="response">
+                        <h3>Chart:</h3>
+                        {{ chart_html | safe }}
+                    </div>
+                {% endif %}
+                <!-- Download Links -->
+                {% if question and (chart_html or table_html) %}
+                    <div class="mt-5">
+                        <a href="/download_pdf?title={{ question }}&table_html={{ table_html }}" class="btn btn-primary">Download as PDF</a>
+                        <a href="/download_ppt?title={{ question }}&table_html={{ table_html }}" class="btn btn-secondary">Download as PPT</a>
+                    </div>
+                {% endif %}
+
+                {% if chart_html %}
+                    <!-- Chat with Chart Form -->
+                    <h2>Chat with Chart</h2>
+                    <form class="chart-query-form" id="chartQueryForm">
+                        <div class="form-group">
+                            <label for="chart_query">Ask about the chart:</label>
+                            <input type="text" class="form-control" id="chart_query" name="chart_query" placeholder="Ask about the chart or SQL results">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                {% endif %}
+
+                <!-- Display chart query response -->
+                <div id="chartQueryResponse"></div>
+                <div id="graphContainer"></div>
+                {% if graph_html %}
+                <div class="response white-background">
+                    <h3>Chart:</h3>
+                    {{ graph_html | safe }}
+                </div>
+                {% endif %}
+                {% if message %}
+                    <div class="alert alert-warning">
+                        {{ message }}
+                    </div>
+                {% endif %}
+                {% if show_feedback %}
+                    <div class="feedback-buttons">
+                        <form action="{{ url_for('feedback', chat_id=chat_id) }}" method="POST">
+                            <button type="submit" name="satisfied" value="true" class="btn btn-primary">Satisfied</button>
+                            <button type="submit" name="satisfied" value="false" class="btn btn-danger">Not Satisfied</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap and JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        jQuery(document).ready(function($) {
+            $('#chartQueryForm').submit(function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                var chartQuery = $('#chart_query').val(); // Get the chart query input value
+                console.log('Chart query:', chartQuery); // Debug statement
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/generate_chart_response',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ chart_query: chartQuery }),
+                    success: function(response) {
+                        console.log('Response:', response); // Debug statement to check response from server
+
+                        // Clear previous responses
+                        $('#chartQueryResponse').empty();
+                        $('#graphContainer').empty();
+
+                        // Check if response is valid
+                        if (response && response.success && response.graph) {
+                            // Format and display the response
+                            var formattedResponse = `
+                                <div class="response white-background">
+                                    <h3>Response to Chart Query:</h3>
+                                    <p>${response.response}</p>
+                                </div>`;
+                            $('#chartQueryResponse').html(formattedResponse);
+
+                            // Append the new chart inside a white background container
+                            $('#graphContainer').html(`
+                                <div class="chart-container white-background">
+                                    ${response.graph}
+                                </div>
+                            `);
+
+                            console.log('Chart HTML:', response.graph); // Debug statement to check graph HTML
+
+                            // Extract and execute script from response.graph
+                            var scriptContent = response.graph.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i);
+                            if (scriptContent && scriptContent[1]) {
+                                var scriptElement = document.createElement('script');
+                                scriptElement.type = 'text/javascript';
+                                scriptElement.text = scriptContent[1];
+                                document.body.appendChild(scriptElement);
+                            }
+                        } else {
+                            // Handle case where response is invalid or empty
+                            $('#chartQueryResponse').html('<p>Error processing the request. Please try again.</p>');
+                        }
+
+                        // Scroll to the bottom of the chartQueryResponse container
+                        var chartQueryResponse = document.getElementById('chartQueryResponse');
+                        chartQueryResponse.scrollTop = chartQueryResponse.scrollHeight;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error); // Debug statement to check error
+                        $('#chartQueryResponse').html('<p>Error processing the request. Please try again.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

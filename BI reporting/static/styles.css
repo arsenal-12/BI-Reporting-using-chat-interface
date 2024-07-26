@@ -1,0 +1,29 @@
+body {
+    background-color: #000048; /* Dark blue background */
+    color: #ffffff; /* White text */
+
+}
+
+.container {
+    margin-top: 100px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.btn-primary {
+    background-color: #08e835; /* Bootstrap primary blue */
+    border: none;
+    width:300px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Sessions</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #000048; /* Dark blue background */
+            color: #ffffff; /* White text */
+            padding-top: 50px; /* Adjust padding for fixed navbar */
+            width:200vh;
+        }
+        .container {
+            max-width: 800px; /* Adjust container width as needed */
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .table {
+            background-color: #1e1e1e; /* Dark gray background */
+            color: #ffffff; /* White text */
+        }
+        .table a {
+            color: #ffffff; /* White link text */
+        }
+        .table a:hover {
+            color: #cccccc; /* Light gray on hover */
+            text-decoration: none; /* Remove underline */
+        }
+        .btn-primary {
+            background-color: #007bff; /* Bootstrap primary blue */
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Chat History</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Session Name</th>
+                    <th>Question</th>
+                    <th>Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in existing_sessions %}
+                <tr>
+                    <td><a href="{{ url_for('chat', chat_id=session['chat_id']) }}">{{ session['name'] }}</a></td>
+                    <td>{{ session['question'] }}</td>
+                    <td>{{ session['response'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form method="POST">
+            <button type="submit" class="btn btn-primary" style="position: absolute;top:90px;right:40px;">Start New Chat</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap and JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
